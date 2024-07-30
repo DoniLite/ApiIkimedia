@@ -1,13 +1,11 @@
 import { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from "fastify";
-import { StateSenderPayload } from "../src";
 
-export const statSenderHook = (
+export const sessionHandlerHook = (
   req: FastifyRequest,
   res: FastifyReply,
   next: HookHandlerDoneFunction
 ) => {
-  res.sender = async (payload: StateSenderPayload) => {
-    return true;
-  };
+  const { user } = req.query as { user: string };
+  req.session.user = { name: user };
   next();
 };

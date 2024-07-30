@@ -9,6 +9,8 @@ import fastifySession from '@fastify/session'
 import fastifyCookie from '@fastify/cookie'
 import fastifyWebsocket from '@fastify/websocket'
 import multer from 'fastify-multer'
+import { statSenderHook } from '../hooks/statSender'
+import { sessionHandlerHook } from '../hooks/sess'
 
 const envToLogger = {
   development: {
@@ -26,10 +28,16 @@ const envToLogger = {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, '/')
+    cb(null, '/uploads')
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    cb(
+      null,
+      file.fieldname +
+        "_" +
+        String(Date.now()) +
+        path.extname(file.originalname)
+    );
   }
 })
 
@@ -40,10 +48,8 @@ const server = fastify({
 })
 
 // Hooks...
-server.addHook("preHandler", (request, reply, next) => {
-  request.session.user = { name: "max" };
-  next();
-});
+server.addHook("preHandler", sessionHandlerHook);
+server.addHook("onResponse", statSenderHook)
 
 
 //Puglins...
